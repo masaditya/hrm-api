@@ -16,7 +16,6 @@ class AttendanceController extends Controller
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 20);
         $workingFrom = $request->input('working_from');
-        $locationId = $request->input('location_id');
         $userId = $request->input('user_id');
 
         // Build the query with optional filters
@@ -24,10 +23,6 @@ class AttendanceController extends Controller
 
         if ($workingFrom) {
             $query->where('work_from_type', $workingFrom);
-        }
-
-        if ($locationId) {
-            $query->where('location_id', $locationId);
         }
 
         if ($userId) {
@@ -184,8 +179,9 @@ class AttendanceController extends Controller
         // Retrieve the attendance record for the user for today
         $attendance = DB::select("
             SELECT * FROM attendances 
-            WHERE user_id = ? AND DATE(clock_in_time) = CURDATE()
-            ", [$userId]);
+            WHERE user_id = ? 
+            AND clock_in_time BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) - INTERVAL 1 SECOND
+        ", [$userId]);
 
         if (!$attendance) {
             return response()->json(['message' => 'No check-in record found for today.'], 404);
