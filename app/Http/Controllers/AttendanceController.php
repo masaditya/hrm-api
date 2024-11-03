@@ -12,7 +12,6 @@ class AttendanceController extends Controller
 {
     public function getAttendaces(Request $request)
     {
-        // Retrieve query parameters with default values
         $page = $request->input('page', 1);
         $limit = $request->input('limit', 20);
         $workingFrom = $request->input('working_from');
@@ -32,14 +31,12 @@ class AttendanceController extends Controller
         // Order by the latest entries first, e.g., by created_at column
         $query->orderBy('created_at', 'desc');
 
-        // Paginate results
-        $attendances = $query->paginate($limit, ['*'], 'page', $page);
+        // Paginate results with custom limit and page
+        $attendances = $query->paginate($limit, ['*'], 'page', $page)->withQueryString();
 
         // Transform data into the required format
         $data = $attendances->getCollection()->transform(function ($attendance) {
             return [
-                'company_id' => $attendance->company_id,
-                'user_id' => $attendance->user_id,
                 'clock_in_time' => $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s') : null,
                 'clock_out_time' => $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format('Y-m-d H:i:s') : null,
                 'auto_clock_out' => (bool) $attendance->auto_clock_out,
@@ -58,7 +55,31 @@ class AttendanceController extends Controller
         // Reapply the transformed collection to the paginator
         $attendances->setCollection($data);
 
-        return response()->json($attendances);
+        // Custom pagination response format
+        return response()->json([
+            'last_page_url' => $attendances->currentPage() === $attendances->lastPage() ? null : $attendances->url($attendances->lastPage()),
+            'links' => [
+                [
+                    'url' => $attendances->currentPage() > 1 ? $attendances->previousPageUrl() : null,
+                    'label' => '&laquo; Previous',
+                    'active' => false,
+                ],
+                [
+                    'url' => $attendances->url(1),
+                    'label' => '1',
+                    'active' => $attendances->currentPage() === 1,
+                ],
+                [
+                    'url' => $attendances->currentPage() < $attendances->lastPage() ? $attendances->nextPageUrl() : null,
+                    'label' => 'Next &raquo;',
+                    'active' => false,
+                ],
+            ],
+            'data' => $attendances->items(),
+            'current_page' => $attendances->currentPage(),
+            'last_page' => $attendances->lastPage(),
+            'total' => $attendances->total(),
+        ]);
     }
 
     public function checkin(Request $request)
@@ -196,8 +217,10 @@ class AttendanceController extends Controller
                 'company_id' => $attendance->company_id,
                 'user_id' => $attendance->user_id,
                 'clock_in_time' => $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s') : null,
+                'clock_out_time' => $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format('Y-m-d H:i:s') : null,
                 'auto_clock_out' => $attendance->auto_clock_out,
                 'clock_in_ip' => $attendance->clock_in_ip,
+                'clock_out_ip' => $attendance->clock_out_ip,
                 'late' => $attendance->late,
                 'latitude' => $attendance->latitude,
                 'longitude' => $attendance->longitude,
