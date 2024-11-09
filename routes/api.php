@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompanyAddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/attendance/checkin', [AttendanceController::class, 'checkin']);
     Route::get('/attendance/check', [AttendanceController::class, 'checkStatus']);
     Route::patch('/attendance/checkout', [AttendanceController::class, 'checkout']);
+
+    Route::get('/company-address', [CompanyAddressController::class, 'index']);
+    Route::get('/attendance/get-user-detail', [AttendanceController::class, 'getUserCompanyDetails']);
 });
 
 Route::get('/user', function (Request $request) {

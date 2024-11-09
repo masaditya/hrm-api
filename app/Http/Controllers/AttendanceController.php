@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\EmployeeDetails;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -88,6 +90,7 @@ class AttendanceController extends Controller
         $validator = Validator::make($request->all(), [
             'company_id' => 'required|integer',
             'user_id' => 'required|integer',
+            'location_id' => 'required|exists:company_addresses,id',
             'clock_in_time' => 'required|date_format:Y-m-d H:i:s',
             'auto_clock_out' => 'required|boolean',
             'clock_in_ip' => 'required|string',
@@ -107,6 +110,7 @@ class AttendanceController extends Controller
         $attendance = new Attendance();
         $attendance->company_id = $request->input('company_id');
         $attendance->user_id = $request->input('user_id');
+        $attendance->location_id = $request->input('location_id');
         $attendance->clock_in_time = Carbon::parse($request->input('clock_in_time'));
         $attendance->auto_clock_out = $request->input('auto_clock_out');
         $attendance->clock_in_ip = $request->input('clock_in_ip');
@@ -190,34 +194,53 @@ class AttendanceController extends Controller
 
     public function checkStatus(Request $request)
     {
-        // Validate the incoming request
         $request->validate([
             'user_id' => 'required|integer',
         ]);
 
         $userId = $request->input('user_id');
 
-        // Retrieve the attendance record for the user for today
-        $attendance = DB::select("
-            SELECT * FROM attendances 
-            WHERE user_id = ? 
-            AND clock_in_time BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY) - INTERVAL 1 SECOND
-        ", [$userId]);
+        // Retrieve the latest attendance record for the user
+        $attendance = Attendance::orderBy('id', 'desc')->where('user_id', $userId)->first();
 
+        // If there's no attendance record
         if (!$attendance) {
-            return response()->json(['message' => 'No check-in record found for today.'], 404);
+            return response()->json([
+                'message' => 'Attendance terakhir tidak ada.',
+                'data' => null,
+            ], 404);
         }
 
-        $attendance = $attendance[0];
+        // If clock_out_time is not null, the user has checked out
+        if ($attendance->clock_out_time !== null) {
+            return response()->json([
+                'message' => 'Pengguna dapat melakukan check in untuk shift baru.',
+                'data' => [
+                    'clock_in_time' => Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s'),
+                    'clock_out_time' => Carbon::parse($attendance->clock_out_time)->format('Y-m-d H:i:s'),
+                    'company_id' => $attendance->company_id,
+                    'user_id' => $attendance->user_id,
+                    'auto_clock_out' => $attendance->auto_clock_out,
+                    'clock_in_ip' => $attendance->clock_in_ip,
+                    'clock_out_ip' => $attendance->clock_out_ip,
+                    'late' => $attendance->late,
+                    'latitude' => $attendance->latitude,
+                    'longitude' => $attendance->longitude,
+                    'work_from_type' => $attendance->work_from_type,
+                    'overwrite_attendance' => $attendance->overwrite_attendance,
+                    'photo' => $attendance->photo,
+                ],
+            ], 200);
+        }
 
-        // Return the attendance record
+        // If clock_out_time is null, the user has checked in but not yet checked out
         return response()->json([
-            'message' => 'Check-in status retrieved successfully.',
+            'message' => 'Pengguna telah check in tetapi belum check out.',
             'data' => [
+                'clock_in_time' => Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s'),
+                'clock_out_time' => null,
                 'company_id' => $attendance->company_id,
                 'user_id' => $attendance->user_id,
-                'clock_in_time' => $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s') : null,
-                'clock_out_time' => $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format('Y-m-d H:i:s') : null,
                 'auto_clock_out' => $attendance->auto_clock_out,
                 'clock_in_ip' => $attendance->clock_in_ip,
                 'clock_out_ip' => $attendance->clock_out_ip,
@@ -230,4 +253,33 @@ class AttendanceController extends Controller
             ],
         ], 200);
     }
+
+    public function getUserCompanyDetails(Request $request)
+    {
+        // Get the currently authenticated user
+        $user = Auth::user();
+
+        // Check if the user is authenticated
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['company:id,latitude,longitude', 'user:id,name'])->first();;
+
+        if (!$employeeDetails) {
+            return response()->json(['message' => 'Company details not found.'], 404);
+        }
+        // Return the company details
+        return response()->json([
+            'message' => 'User details retrieved successfully.',
+            'data' => [
+                'id_user' => $employeeDetails->user_id,
+                'name' => $employeeDetails->user->name,
+                'company_address_id' => $employeeDetails->company_address_id,
+                'latitude' => $employeeDetails->company->latitude,
+                'longitude' => $employeeDetails->company->longitude,
+            ],
+        ]);
+    }
+
 }
