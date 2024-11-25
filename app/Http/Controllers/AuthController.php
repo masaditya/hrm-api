@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EmployeeDetails;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -78,11 +80,52 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Return the authenticated user's data
+        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['user:id,name,email', 'designation:id,name', 'team:id,team_name', 'companies:id,company_name'])->first();;
+
+        if (!$employeeDetails) {
+            return response()->json(['message' => 'Company details not found.'], 404);
+        }
+        // Return the company details
         return response()->json([
-            'message' => 'User retrieved successfully.',
-            'data' => $user,
+            'message' => 'User details retrieved successfully.',
+            'data' => [
+                'id_user' => $employeeDetails->user_id,
+                'employee_id' => $employeeDetails->employee_id,
+                'company_name' => $employeeDetails->companies->company_name,
+                'name' => $employeeDetails->user->name,
+                'email' => $employeeDetails->user->email,
+                'designation' => $employeeDetails->designation->name,
+                'role' => $employeeDetails->team->team_name,
+            ],
         ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Get the currently authenticated user
+        $user = Auth::user();
+
+        // Check if the user is authenticated
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully'], 200);
     }
     
     public function logout(Request $request)

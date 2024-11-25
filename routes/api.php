@@ -20,6 +20,7 @@ Route::get('/not-authorized', function (Request $request) {
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/user-logged', [AuthController::class, 'getUser']);
+    Route::patch('/update-password', [AuthController::class, 'updatePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/attendance', [AttendanceController::class, 'getAttendaces']);
     Route::post('/attendance/checkin', [AttendanceController::class, 'checkin']);

@@ -151,8 +151,7 @@ class AttendanceController extends Controller
 
         // Find the attendance record for today, the user, and the specific ID
         $attendance = Attendance::where('user_id', $userId)
-            ->where('id', $attendanceId) // Check for the specific attendance ID
-            ->whereDate('clock_in_time', now()->toDateString()) // Check for today's attendance
+            ->where('id', $attendanceId)
             ->first();
 
         // Check if attendance record was found
@@ -216,6 +215,7 @@ class AttendanceController extends Controller
             return response()->json([
                 'message' => 'Pengguna dapat melakukan check in untuk shift baru.',
                 'data' => [
+                    'id' => $attendance->id,
                     'clock_in_time' => Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s'),
                     'clock_out_time' => Carbon::parse($attendance->clock_out_time)->format('Y-m-d H:i:s'),
                     'company_id' => $attendance->company_id,
@@ -237,6 +237,7 @@ class AttendanceController extends Controller
         return response()->json([
             'message' => 'Pengguna telah check in tetapi belum check out.',
             'data' => [
+                'id' => $attendance->id,
                 'clock_in_time' => Carbon::parse($attendance->clock_in_time)->format('Y-m-d H:i:s'),
                 'clock_out_time' => null,
                 'company_id' => $attendance->company_id,
