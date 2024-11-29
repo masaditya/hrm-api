@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmployeeDetails;
+use App\Models\RoleUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -60,13 +61,59 @@ class AuthController extends Controller
             $user->save();
         }
 
+        $roleUser = RoleUser::with('role')
+            ->where('user_id', $user->id)
+            ->first();
+
         // User authenticated successfully, generate Sanctum token
         $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'company_id' => $user->company_id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'two_factor_confirmed' => $user->two_factor_confirmed,
+                'two_factor_email_confirmed' => $user->two_factor_email_confirmed,
+                'image' => $user->image,
+                'country_phonecode' => $user->country_phonecode,
+                'mobile' => $user->mobile,
+                'gender' => $user->gender,
+                'salutation' => $user->salutation,
+                'locale' => $user->locale,
+                'status' => $user->status,
+                'login' => $user->login,
+                'onesignal_player_id' => $user->onesignal_player_id,
+                'last_login' => $user->last_login,
+                'email_notifications' => $user->email_notifications,
+                'country_id' => $user->country_id,
+                'dark_theme' => $user->dark_theme,
+                'rtl' => $user->rtl,
+                'two_fa_verify_via' => $user->two_fa_verify_via,
+                'two_factor_code' => $user->two_factor_code,
+                'two_factor_expires_at' => $user->two_factor_expires_at,
+                'admin_approval' => $user->admin_approval,
+                'permission_sync' => $user->permission_sync,
+                'google_calendar_status' => $user->google_calendar_status,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'customised_permissions' => $user->customised_permissions,
+                'stripe_id' => $user->stripe_id,
+                'pm_type' => $user->pm_type,
+                'pm_last_four' => $user->pm_last_four,
+                'trial_ends_at' => $user->trial_ends_at,
+                'headers' => $user->headers,
+                'register_ip' => $user->register_ip,
+                'location_details' => $user->location_details,
+                'inactive_date' => $user->inactive_date,
+                'twitter_id' => $user->twitter_id,
+                'android_id' => $user->android_id,
+                'role_id' => $roleUser->role->id ?? null, // Tambahkan role_id
+                'role_name' => $roleUser->role->name ?? null // Tambahkan role_name
+            ]
         ], 200);
     }
 

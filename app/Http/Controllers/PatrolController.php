@@ -9,15 +9,13 @@ use Illuminate\Support\Facades\Validator;
 
 class PatrolController extends Controller
 {
-
     public function getPatrolType()
     {
         return response()->json([
             'message' => 'Success',
             'data' => PatrolTypes::all(['id', 'name']),
-        ], 201);
+        ], 200);
     }
-
     public function create(Request $request)
     {
         $validator = Validator::make($request->all(), [

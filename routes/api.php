@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyAddressController;
+use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PatrolController;
 use App\Models\PatrolTypes;
 use Illuminate\Http\Request;
@@ -32,6 +33,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('/patrol/create', [PatrolController::class, 'create']);
     Route::get('/patrol-types', [PatrolController::class, 'getPatrolType']);
+
+    Route::get('/leave-types', [LeaveController::class, 'getLeaveType']);
+    Route::post('/leave/create', [LeaveController::class, 'create']);
 });
 
 Route::get('/user', function (Request $request) {

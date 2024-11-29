@@ -276,6 +276,7 @@ class AttendanceController extends Controller
             'data' => [
                 'id_user' => $employeeDetails->user_id,
                 'name' => $employeeDetails->user->name,
+                'company_id' => $employeeDetails->company_id,
                 'company_address_id' => $employeeDetails->company_address_id,
                 'latitude' => $employeeDetails->company->latitude,
                 'longitude' => $employeeDetails->company->longitude,
