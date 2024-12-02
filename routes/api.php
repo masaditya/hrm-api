@@ -36,6 +36,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/leave-types', [LeaveController::class, 'getLeaveType']);
     Route::post('/leave/create', [LeaveController::class, 'create']);
+    Route::get('/leaves', [LeaveController::class, 'getLeaves']);
 });
 
 Route::get('/user', function (Request $request) {

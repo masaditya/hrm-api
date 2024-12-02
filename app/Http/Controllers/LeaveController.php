@@ -85,5 +85,65 @@ class LeaveController extends Controller
         ], 201);
     }
 
+    public function getLeaves(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 20);
+        $userId = $request->input('user_id');
 
+        // Build the query with optional filters
+        $query = Leave::query()->latest();
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        // Paginate results with custom limit and page
+        $leaves = $query->paginate($limit, ['*'], 'page', $page)->withQueryString();
+
+        // Transform data into the required format
+        $data = $leaves->getCollection()->transform(function ($leave) {
+            return [
+                'company_id' => $leave->company_id,
+                'user_id' => $leave->user_id,
+                'leave_type_id' => $leave->leave_type_id,
+                'duration' => $leave->duration,
+                'leave_date' => $leave->leave_date,
+                'reason' => $leave->reason,
+                'status' => $leave->status,
+                'paid' => $leave->paid,
+                'over_utilized' => $leave->over_utilized,
+                'added_by' => $leave->added_by,
+            ];
+        });
+
+        // Reapply the transformed collection to the paginator
+        $leaves->setCollection($data);
+
+        // Custom pagination response format
+        return response()->json([
+            'last_page_url' => $leaves->currentPage() === $leaves->lastPage() ? null : $leaves->url($leaves->lastPage()),
+            'links' => [
+                [
+                    'url' => $leaves->currentPage() > 1 ? $leaves->previousPageUrl() : null,
+                    'label' => '&laquo; Previous',
+                    'active' => false,
+                ],
+                [
+                    'url' => $leaves->url(1),
+                    'label' => '1',
+                    'active' => $leaves->currentPage() === 1,
+                ],
+                [
+                    'url' => $leaves->currentPage() < $leaves->lastPage() ? $leaves->nextPageUrl() : null,
+                    'label' => 'Next &raquo;',
+                    'active' => false,
+                ],
+            ],
+            'data' => $leaves->items(),
+            'current_page' => $leaves->currentPage(),
+            'last_page' => $leaves->lastPage(),
+            'total' => $leaves->total(),
+        ]);
+    }
 }
