@@ -8,6 +8,7 @@ use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
@@ -45,6 +46,7 @@ class LeaveController extends Controller
             // Simpan data leave untuk setiap tanggal
             $leave = new Leave();
             $leave->company_id = $request->company_id;
+            $leave->unique_id = (string) Str::uuid();
             $leave->user_id = $request->user_id;
             $leave->leave_type_id = $request->leave_type_id;
             $leave->duration = 'Full-day';

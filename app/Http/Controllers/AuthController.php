@@ -147,6 +147,41 @@ class AuthController extends Controller
         ]);
     }
 
+    public function updateEmail(Request $request, $id)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:users,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Cari user berdasarkan ID
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        // Perbarui email
+        $user->email = $request->email;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email updated successfully.',
+            'data' => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ],
+        ], 200);
+    }
+
     public function updatePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
