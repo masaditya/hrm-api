@@ -44,3 +44,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::post('/login-v2', [AuthController::class, 'login']);
