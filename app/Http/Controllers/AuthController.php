@@ -63,7 +63,14 @@ class AuthController extends Controller
 
         $roleUser = RoleUser::with('role')
             ->where('user_id', $user->id)
+            ->orderByDesc('role_id')
             ->first();
+        
+        if ($roleUser && $roleUser->role) {
+            $lastRole = $roleUser->role; // Ambil data role terakhir melalui 
+        } else {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
 
         // User authenticated successfully, generate Sanctum token
         $token = $user->createToken('API Token')->plainTextToken;
@@ -111,8 +118,8 @@ class AuthController extends Controller
                 'inactive_date' => $user->inactive_date,
                 'twitter_id' => $user->twitter_id,
                 'android_id' => $user->android_id,
-                'role_id' => $roleUser->role->id ?? null, // Tambahkan role_id
-                'role_name' => $roleUser->role->name ?? null // Tambahkan role_name
+                'role_id' => $lastRole->id ?? null, // Tambahkan role_id
+                'role_name' => $lastRole->name ?? null // Tambahkan role_name
             ]
         ], 200);
     }
