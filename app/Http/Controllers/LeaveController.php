@@ -31,6 +31,7 @@ class LeaveController extends Controller
             'reason' => 'required|string',
             'added_by' => 'required|exists:users,id',
             'filename' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'duration' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -40,16 +41,17 @@ class LeaveController extends Controller
          // Ambil rentang tanggal
         $startDate = Carbon::parse($request->leave_date); // Tanggal mulai
         $endDate = Carbon::parse($request->leave_end_date); // Tanggal selesai
+        $code_unique = (string) Str::uuid();
 
         // Loop dari tanggal mulai ke tanggal selesai
         while ($startDate <= $endDate) {
             // Simpan data leave untuk setiap tanggal
             $leave = new Leave();
             $leave->company_id = $request->company_id;
-            $leave->unique_id = (string) Str::uuid();
+            $leave->unique_id = $code_unique;
             $leave->user_id = $request->user_id;
             $leave->leave_type_id = $request->leave_type_id;
-            $leave->duration = 'Full-day';
+            $leave->duration = $request->duration;
             $leave->leave_date = $startDate->toDateString(); // Gunakan tanggal yang sedang diproses
             $leave->reason = $request->reason;
             $leave->status = 'pending';
