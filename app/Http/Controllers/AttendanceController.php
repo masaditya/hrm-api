@@ -265,7 +265,7 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['company:id,latitude,longitude', 'user:id,name'])->first();;
+        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['company:id,latitude,longitude', 'user:id,name,image'])->first();;
 
         if (!$employeeDetails) {
             return response()->json(['message' => 'Company details not found.'], 404);
@@ -276,6 +276,7 @@ class AttendanceController extends Controller
             'data' => [
                 'id_user' => $employeeDetails->user_id,
                 'name' => $employeeDetails->user->name,
+                'image' => $employeeDetails->user->image,
                 'company_id' => $employeeDetails->company_id,
                 'company_address_id' => $employeeDetails->company_address_id,
                 'latitude' => $employeeDetails->company->latitude,

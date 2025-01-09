@@ -31,7 +31,6 @@ class LeaveController extends Controller
             'reason' => 'required|string',
             'added_by' => 'required|exists:users,id',
             'filename' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'duration' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -41,6 +40,11 @@ class LeaveController extends Controller
          // Ambil rentang tanggal
         $startDate = Carbon::parse($request->leave_date); // Tanggal mulai
         $endDate = Carbon::parse($request->leave_end_date); // Tanggal selesai
+        if ($startDate->equalTo($endDate)) {
+            $duration = 'single';
+        } else {
+            $duration = 'multiple';
+        }
         $code_unique = (string) Str::uuid();
 
         // Loop dari tanggal mulai ke tanggal selesai
@@ -51,7 +55,7 @@ class LeaveController extends Controller
             $leave->unique_id = $code_unique;
             $leave->user_id = $request->user_id;
             $leave->leave_type_id = $request->leave_type_id;
-            $leave->duration = $request->duration;
+            $leave->duration = $duration;
             $leave->leave_date = $startDate->toDateString(); // Gunakan tanggal yang sedang diproses
             $leave->reason = $request->reason;
             $leave->status = 'pending';
