@@ -134,7 +134,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['user:id,name,email', 'designation:id,name', 'team:id,team_name', 'companies:id,company_name'])->first();;
+        $employeeDetails = EmployeeDetails::where('user_id', $user->id)->with(['user:id,name,email,image', 'designation:id,name', 'team:id,team_name', 'companies:id,company_name,latitude,longitude'])->first();;
 
         if (!$employeeDetails) {
             return response()->json(['message' => 'Company details not found.'], 404);
@@ -157,8 +157,13 @@ class AuthController extends Controller
             'data' => [
                 'id_user' => $employeeDetails->user_id,
                 'employee_id' => $employeeDetails->employee_id,
+                'company_id' => $employeeDetails->company_id,
+                'company_address_id' => $employeeDetails->company_address_id,
                 'company_name' => $employeeDetails->companies->company_name,
+                'latitude' => $employeeDetails->companies->latitude,
+                'longitude' => $employeeDetails->companies->longitude,
                 'name' => $employeeDetails->user->name,
+                'image' => $employeeDetails->user->image,
                 'email' => $employeeDetails->user->email,
                 'designation' => $employeeDetails->designation->name,
                 'team' => $employeeDetails->team->team_name,
