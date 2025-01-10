@@ -139,6 +139,18 @@ class AuthController extends Controller
         if (!$employeeDetails) {
             return response()->json(['message' => 'Company details not found.'], 404);
         }
+
+        $roleUser = RoleUser::with('role')
+            ->where('user_id', $user->id)
+            ->orderByDesc('role_id')
+            ->first();
+        
+        if ($roleUser && $roleUser->role) {
+            $lastRole = $roleUser->role; // Ambil data role terakhir melalui 
+        } else {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
+
         // Return the company details
         return response()->json([
             'message' => 'User details retrieved successfully.',
@@ -149,7 +161,9 @@ class AuthController extends Controller
                 'name' => $employeeDetails->user->name,
                 'email' => $employeeDetails->user->email,
                 'designation' => $employeeDetails->designation->name,
-                'role' => $employeeDetails->team->team_name,
+                'team' => $employeeDetails->team->team_name,
+                'role_id' => $lastRole->id ?? null, // Tambahkan role_id
+                'role_name' => $lastRole->name ?? null // Tambahkan role_name
             ],
         ]);
     }
