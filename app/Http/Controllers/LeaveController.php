@@ -100,7 +100,11 @@ class LeaveController extends Controller
         $userId = $request->input('user_id');
 
         // Build the query with optional filters
-        $query = Leave::query()->latest();
+        $query = Leave::query()
+            ->with(['leaveType' => function ($query) {
+                $query->select('id', 'type_name');
+            }])
+            ->latest();
 
         if ($userId) {
             $query->where('user_id', $userId);
@@ -115,6 +119,7 @@ class LeaveController extends Controller
                 'company_id' => $leave->company_id,
                 'user_id' => $leave->user_id,
                 'leave_type_id' => $leave->leave_type_id,
+                'type_name' => $leave->leaveType->type_name,
                 'duration' => $leave->duration,
                 'leave_date' => $leave->leave_date,
                 'reason' => $leave->reason,
