@@ -163,7 +163,7 @@ class AuthController extends Controller
                 'designation' => $employeeDetails->designation->name,
                 'team' => $employeeDetails->team->team_name,
                 'role_id' => $lastRole->id ?? null, // Tambahkan role_id
-                'role_name' => $lastRole->name ?? null // Tambahkan role_name
+                'role' => $lastRole->name ?? null // Tambahkan role_name
             ],
         ]);
     }
