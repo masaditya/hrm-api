@@ -30,7 +30,7 @@ class LeaveController extends Controller
             'leave_end_date' => 'required|date|after_or_equal:leave_date',
             'reason' => 'required|string',
             'added_by' => 'required|exists:users,id',
-            'filename' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'filename' => 'required|image|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -66,18 +66,26 @@ class LeaveController extends Controller
             $leave->save();
 
             // Jika ada file, simpan file untuk setiap leave yang baru dibuat
+
             if ($request->hasFile('filename')) {
                 $file = $request->file('filename');
-                $hashname = $file->hashName(); // Nama file unik
-                $path = $file->storeAs('images/leave', $hashname, 'public'); // Simpan file ke public disk
+
+                // Menghasilkan nama file yang unik
+                $hashname = $file->hashName(); 
+
+                // Menyimpan gambar ke storage publik
+                $path = $file->storeAs('images/leave', $hashname, 'public'); 
+
+                // Membuat URL lengkap untuk file yang disimpan
+                $fullLink = asset('storage/' . $path);
 
                 // Simpan informasi file untuk leave yang baru dibuat
                 $file_leave = new LeaveFile();
                 $file_leave->company_id = $request->company_id;
                 $file_leave->user_id = $request->user_id;
-                $file_leave->leave_id = $leave->id; // Referensikan leave yang baru disimpan
+                $file_leave->leave_id = $leave->id;
                 $file_leave->filename = $file->getClientOriginalName();
-                $file_leave->hashname = $hashname;
+                $file_leave->hashname = $fullLink;
                 $file_leave->size = $file->getSize();
                 $file_leave->added_by = $request->added_by;
                 $file_leave->save();
