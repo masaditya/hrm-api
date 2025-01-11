@@ -30,7 +30,7 @@ class LeaveController extends Controller
             'leave_end_date' => 'required|date|after_or_equal:leave_date',
             'reason' => 'required|string',
             'added_by' => 'required|exists:users,id',
-            'filename' => 'required|image|mimes:jpg,jpeg,png,pdf|max:2048',
+            'filename' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         if ($validator->fails()) {
