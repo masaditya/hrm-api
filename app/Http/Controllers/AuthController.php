@@ -30,9 +30,12 @@ class AuthController extends Controller
         // Find user by email
         $user = User::where('email', $request->email)->first();
 
-        // Check if user exists
+        // Periksa apakah pengguna terdaftar
         if (!$user) {
-            return response()->json(['message' => __('messages.unAuthorisedUser')], 401);
+            return response()->json([
+                'code' => 404,
+                'message' => __('Alamat email yang Anda masukkan tidak terdaftar di sistem kami.')
+            ], 404);
         }
 
         // Check user status
@@ -46,7 +49,10 @@ class AuthController extends Controller
 
         // Verify password
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => __('auth.failed')], 401);
+            return response()->json([
+                'code' => 401,
+                'message' => __('Kata sandi yang Anda masukkan tidak sesuai.')
+            ], 401);
         }
 
         // Check android_id
