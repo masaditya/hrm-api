@@ -4,25 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class NoticeView extends Model
+class NoticeFile extends Model
 {
-    protected $table = 'notice_views';
+    protected $table = 'notice_files';
 
     protected $fillable = [
-        'company_id',
         'notice_id',
-        'user_id',
-        'read',
+        'filename',
+        'google_url',
+        'hashname',
+        'external_link',
+        'dropbox_link',
+        'external_link_name',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
     public function notice()
     {
         return $this->belongsTo(Notice::class, 'notice_id');
     }
-
 }

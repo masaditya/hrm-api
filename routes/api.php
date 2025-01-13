@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyAddressController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PatrolController;
 use App\Models\PatrolTypes;
 use Illuminate\Http\Request;
@@ -39,6 +40,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/leaves', [LeaveController::class, 'getLeaves']);
 
     Route::put('/user/{id}/email', [AuthController::class, 'updateEmail']);
+
+    Route::get('/notices', [NoticeController::class, 'getUserNotices']);
+    Route::get('/notice/detail', [NoticeController::class, 'getNoticeDetail']);
+
 });
 
 Route::get('/user', function (Request $request) {
