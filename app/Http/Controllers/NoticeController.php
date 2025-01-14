@@ -93,4 +93,38 @@ class NoticeController extends Controller
             'data'    => $data,
         ]);
     }
+
+     public function markAsRead(Request $request)
+    {
+
+        $request->validate([
+            'notice_id' => 'required|exists:notices,id',
+        ]);
+
+        try {
+            // Update the 'read' column to 1 for the given notice_id
+            $updated = NoticeView::where('notice_id', $request->notice_id)
+                ->where('read', 0) // Ensure only unread records are updated
+                ->update(['read' => 1]);
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Notice marked as read.',
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No unread notices found for the given ID.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the notice.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

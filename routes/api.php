@@ -43,6 +43,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/notices', [NoticeController::class, 'getUserNotices']);
     Route::get('/notice/detail', [NoticeController::class, 'getNoticeDetail']);
+    Route::put('/notice-views/read/', [NoticeController::class, 'markAsRead']);
 
 });
 
