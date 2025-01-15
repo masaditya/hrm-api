@@ -45,8 +45,8 @@ class NoticeController extends Controller
 
         // Cari notice berdasarkan notice_id
         $notice = Notice::with(['department'])
-            ->join('notice_files', 'notices.id', '=', 'notice_files.notice_id')
-            ->join('notice_views', 'notices.id', '=', 'notice_views.notice_id')
+            ->leftjoin('notice_files', 'notices.id', '=', 'notice_files.notice_id')
+            ->leftjoin('notice_views', 'notices.id', '=', 'notice_views.notice_id')
             ->where('notices.id', $request->notice_id)
             ->select(
                 'notices.*', // Semua kolom dari tabel notices
