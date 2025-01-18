@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EmployeeDetails;
 use App\Models\Patrol;
 use App\Models\PatrolTypes;
 use Illuminate\Http\Request;
@@ -32,6 +33,10 @@ class PatrolController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $departmentId = EmployeeDetails::where('user_id', $request['added_by'])
+        ->select('department_id', 'company_id')
+        ->firstOrFail();
+
         // Create the patrol record
         $patrol = new Patrol();
         $patrol->name = $request['name'];
@@ -40,6 +45,8 @@ class PatrolController extends Controller
         $patrol->longitude = $request['longitude'];
         $patrol->latitude = $request['latitude'];
         $patrol->added_by = $request['added_by'];
+        $patrol->location = $departmentId->department_id ?? NULL;
+        $patrol->company_id = $departmentId->company_id ?? NULL;
 
         // Handle the image upload if present
         if ($request->hasFile('image')) {
