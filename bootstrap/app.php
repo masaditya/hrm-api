@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('login');
             }
         });
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
